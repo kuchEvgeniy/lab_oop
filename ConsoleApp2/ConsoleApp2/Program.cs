@@ -29,6 +29,9 @@ while (running)
     ServicesManager.Writer.Log("4. Видалити номер");
     ServicesManager.Writer.Log("5. Демонстрація поведінки");
     ServicesManager.Writer.Log("6. Показати середню ціну за ніч для всіх номерів(static)");
+    ServicesManager.Writer.Log("7. Зберегти колекцію об’єктів у файлі");
+    ServicesManager.Writer.Log("8. Зчитати колекцію об’єктів з файлу");
+    ServicesManager.Writer.Log("9. Очистити колекцію об’єктів");
     ServicesManager.Writer.Log("0. Вийти з програми");
     ServicesManager.Writer.Log("");
 
@@ -55,6 +58,15 @@ while (running)
             break;
         case "6":
             ShowAveragePricePerNight();
+            break;
+        case "7":
+            SaveCollectionMenu();
+            break;
+        case "8":
+            LoadCollectionMenu();
+            break;
+        case "9":
+            ClearRooms();
             break;
         case "0":
             running = false;
@@ -435,7 +447,6 @@ void ShowAveragePricePerNight()
     ServicesManager.Writer.Log($"Середня ціна за ніч для всіх номерів: {averagePrice} грн.");
 }
 
-
 void SaveRoomsToCsv(string filePath = "rooms.csv")
 {
     try
@@ -486,8 +497,6 @@ void LoadRoomsFromCsv(string filePath = "rooms.csv")
     }
 }
 
-
-//json
 void SaveRoomsToJson(string filePath = "rooms.json")
 {
     try
@@ -538,8 +547,6 @@ void LoadRoomsFromJson(string filePath = "rooms.json")
     }
 }
 
-
-//новые менюшки
 void SaveCollectionMenu()
 {
     ServicesManager.Writer.Log("\nОберіть формат збереження колекції:" +
@@ -591,4 +598,10 @@ void LoadCollectionMenu()
             ServicesManager.Writer.Log("Невірний вибір, повернення до головного меню.");
             break;
     }
+}
+
+void ClearRooms()
+{
+    rooms.Clear();
+    ServicesManager.Writer.Log("Колекцію очищено.");
 }
