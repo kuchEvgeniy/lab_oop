@@ -1,6 +1,7 @@
 ﻿using ConsoleApp1;
 using ConsoleApp1.ConsoleInterface;
 using HotelApp;
+using System.Text.Json;
 
 ServicesManager.Writer = new ConsoleLogger();
 ServicesManager.Reader = new ConsoleReader();
@@ -432,4 +433,162 @@ void ShowAveragePricePerNight()
 {
     double averagePrice = HotelRoom.CalculateAveragePricePerNight(rooms);
     ServicesManager.Writer.Log($"Середня ціна за ніч для всіх номерів: {averagePrice} грн.");
+}
+
+
+void SaveRoomsToCsv(string filePath = "rooms.csv")
+{
+    try
+    {
+        using (StreamWriter writer = new StreamWriter(filePath))
+        {
+            foreach (var plane in rooms)
+            {
+                writer.WriteLine(plane.ToString());
+            }
+        }
+
+        ServicesManager.Writer.Log("Колекцію успішно збережено у файл rooms.csv.");
+    }
+    catch (Exception e)
+    {
+        ServicesManager.Writer.Log($"Помилка при збереженні у файл: {e.Message}");
+    }
+}
+
+void LoadRoomsFromCsv(string filePath = "rooms.csv")
+{
+    try
+    {
+        if (!File.Exists(filePath))
+        {
+            ServicesManager.Writer.Log("Файл rooms.csv не знайдено.");
+            return;
+        }
+
+        using (StreamReader reader = new StreamReader(filePath))
+        {
+            string line;
+            while ((line = reader.ReadLine()) != null)
+            {
+                var airPlane = HotelRoom.FromCsv(line);
+                if (airPlane != null)
+                {
+                    rooms.Add(airPlane);
+                }
+            }
+        }
+        ServicesManager.Writer.Log("\nКолекцію завантажено з файлу rooms.csv.");
+    }
+    catch (Exception e)
+    {
+        ServicesManager.Writer.Log($"Помилка при читанні з файлу: {e.Message}");
+    }
+}
+
+
+//json
+void SaveRoomsToJson(string filePath = "rooms.json")
+{
+    try
+    {
+        var options = new JsonSerializerOptions
+        {
+            WriteIndented = true
+        };
+
+        string jsonString = JsonSerializer.Serialize(rooms, options);
+        File.WriteAllText(filePath, jsonString);
+
+        ServicesManager.Writer.Log($"Колекцію успішно збережено у файл rooms.json.");
+    }
+    catch (Exception e)
+    {
+        ServicesManager.Writer.Log($"Помилка при збереженні у файл rooms.json");
+    }
+}
+
+void LoadRoomsFromJson(string filePath = "rooms.json")
+{
+    try
+    {
+
+        if (!File.Exists(filePath))
+        {
+            ServicesManager.Writer.Log($"Файл rooms.json не знайдено.");
+            return;
+        }
+
+        string jsonString = File.ReadAllText(filePath);
+        var Rooms = JsonSerializer.Deserialize<List<HotelRoom>>(jsonString);
+
+        if (Rooms != null)
+        {
+            rooms.AddRange(Rooms);
+            ServicesManager.Writer.Log($"Колекцію успішно завантажено з файлу rooms.json.");
+        }
+        else
+        {
+            ServicesManager.Writer.Log("Не вдалося десеріалізувати колекцію з файлу.");
+        }
+    }
+    catch (Exception e)
+    {
+        ServicesManager.Writer.Log($"Помилка при читанні з файлу: {e.Message}");
+    }
+}
+
+
+//новые менюшки
+void SaveCollectionMenu()
+{
+    ServicesManager.Writer.Log("\nОберіть формат збереження колекції:" +
+                              "\n1 – зберегти у файл *.csv" +
+                              "\n2 – зберегти у файл *.json");
+    int choice;
+
+    while (!int.TryParse(ServicesManager.Reader.Read(), out choice) || choice < 1 || choice > 2)
+    {
+        ServicesManager.Writer.Log("Невірний вибір. Виберіть дію від 1 до 2.");
+    }
+
+
+    switch (choice)
+    {
+        case 1:
+            SaveRoomsToCsv();
+            break;
+        case 2:
+            SaveRoomsToJson();
+            break;
+        default:
+            ServicesManager.Writer.Log("Невірний вибір, повернення до головного меню.");
+            break;
+    }
+}
+
+void LoadCollectionMenu()
+{
+    ServicesManager.Writer.Log("\nОберіть формат зчитування колекції:" +
+                              "\n1 – зчитати з файлу *.csv" +
+                              "\n2 – зчитати з файлу *.json");
+    int choice;
+
+    while (!int.TryParse(ServicesManager.Reader.Read(), out choice) || choice < 1 || choice > 2)
+    {
+        ServicesManager.Writer.Log("Невірний вибір. Виберіть дію від 1 до 2.");
+    }
+
+    switch (choice)
+    {
+        case 1:
+            LoadRoomsFromCsv();
+            break;
+        case 2:
+            LoadRoomsFromJson();
+            break;
+        default:
+            ServicesManager.Writer.Log("Невірний вибір, повернення до головного меню.");
+            break;
+    }
 }

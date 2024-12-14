@@ -231,6 +231,58 @@ namespace HotelApp
         {
             return $"{roomNumber},{roomType},{isAvailable},{pricePerNight},{bedCount},{currency}";
         }
+
+
+        public static HotelRoom? FromCsv(string csvLine)
+        {
+            var values = csvLine.Split(',');
+
+            if (values.Length != 6)
+            {
+                ServicesManager.Writer.Log("Неправильний формат рядка. Очікується 6 частин.");
+                ServicesManager.Writer.Log("Помилка у рядку: " + string.Join(',', values));
+                return null;
+            }
+
+            try
+            {
+                if (!int.TryParse(values[0].Trim(), out int roomNumber))
+                {
+                    ServicesManager.Writer.Log("Невірний формат номера кімнати");
+                    return null;
+                }
+                if (!Enum.TryParse(values[1].Trim(), out RoomType roomType))
+                {
+                    ServicesManager.Writer.Log("Невірний формат типу кімнати");
+                    return null;
+                }
+                if (!bool.TryParse(values[2].Trim(), out bool isAvailable))
+                {
+                    ServicesManager.Writer.Log("Невірний формат доступності");
+                    return null;
+                }
+                if (!double.TryParse(values[3].Trim(), NumberStyles.Any, CultureInfo.InvariantCulture, out double pricePerNight))
+                {
+                    ServicesManager.Writer.Log("Невірний формат ціни за ніч");
+                    return null;
+                }
+                if (!int.TryParse(values[4].Trim(), out int bedCount))
+                {
+                    ServicesManager.Writer.Log("Невірний формат кількості ліжок");
+                    return null;
+                }
+                string currency = values[5].Trim();
+
+                return new HotelRoom(roomNumber, roomType, isAvailable, pricePerNight, bedCount) { currency = currency };
+            }
+            catch (Exception e)
+            {
+                ServicesManager.Writer.Log($"Помилка у: {csvLine}");
+                ServicesManager.Writer.Log(e.Message);
+                return null;
+            }
+        }
+
     }
 
 }
