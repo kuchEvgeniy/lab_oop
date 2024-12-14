@@ -585,7 +585,7 @@ void LoadCollectionMenu()
     {
         ServicesManager.Writer.Log("Невірний вибір. Виберіть дію від 1 до 2.");
     }
-
+    
     switch (choice)
     {
         case 1:

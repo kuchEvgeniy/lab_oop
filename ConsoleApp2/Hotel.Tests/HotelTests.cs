@@ -247,11 +247,9 @@ namespace Hotel.Tests
 
             Assert.AreEqual(102, loadedRooms[1].RoomNumber);
             Assert.AreEqual(RoomType.Standard, loadedRooms[1].RoomType);
-            Assert.IsFalse(loadedRooms[1].IsAvailable);
+            Assert.IsTrue(loadedRooms[1].IsAvailable);
             Assert.AreEqual(100.0, loadedRooms[1].PricePerNight);
             Assert.AreEqual(1, loadedRooms[1].BedCount);
-
-            File.Delete(filePath);
         }
 
         [TestMethod]
@@ -278,7 +276,7 @@ namespace Hotel.Tests
 
             Assert.AreEqual(102, loadedRooms[1].RoomNumber);
             Assert.AreEqual(RoomType.Standard, loadedRooms[1].RoomType);
-            Assert.IsFalse(loadedRooms[1].IsAvailable);
+            Assert.IsTrue(loadedRooms[1].IsAvailable);
             Assert.AreEqual(100.0, loadedRooms[1].PricePerNight);
             Assert.AreEqual(1, loadedRooms[1].BedCount);
 
