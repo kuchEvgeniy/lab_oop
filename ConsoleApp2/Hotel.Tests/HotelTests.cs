@@ -1,6 +1,7 @@
 ﻿using ConsoleApp1;
 using ConsoleApp1.ConsoleInterface;
 using HotelApp;
+using System.Text.Json;
 
 namespace Hotel.Tests
 {
@@ -170,6 +171,166 @@ namespace Hotel.Tests
         }
 
 
+        [TestMethod]
+        public void Test_SaveRoomsToCsv()
+        {
+            var rooms = new List<HotelRoom>
+            {
+                new HotelRoom(101, RoomType.Deluxe, true, 150.0, 2),
+                new HotelRoom(102, RoomType.Standard, false, 100.0, 1)
+            };
 
+            string filePath = "test_rooms.csv";
+            SaveRoomsToCsv(filePath, rooms);
+
+            Assert.IsTrue(File.Exists(filePath));
+
+            var lines = File.ReadAllLines(filePath);
+            Assert.AreEqual(2, lines.Length);
+            Assert.AreEqual("101,Deluxe,True,150,2,грн", lines[0]);
+            Assert.AreEqual("102,Standard,False,100,1,грн", lines[1]);
+
+            File.Delete(filePath);
+        }
+
+        [TestMethod]
+        public void Test_LoadRoomsFromCsv()
+        {
+            string filePath = "test_rooms.csv";
+            File.WriteAllLines(filePath, new[]
+            {
+                "101,Deluxe,True,150,2,грн",
+                "102,Standard,False,100,1,грн"
+            });
+
+            var rooms = LoadRoomsFromCsv(filePath);
+
+            Assert.AreEqual(2, rooms.Count);
+            Assert.AreEqual(101, rooms[0].RoomNumber);
+            Assert.AreEqual(RoomType.Deluxe, rooms[0].RoomType);
+            Assert.IsTrue(rooms[0].IsAvailable);
+            Assert.AreEqual(150.0, rooms[0].PricePerNight);
+            Assert.AreEqual(2, rooms[0].BedCount);
+
+            Assert.AreEqual(102, rooms[1].RoomNumber);
+            Assert.AreEqual(RoomType.Standard, rooms[1].RoomType);
+            Assert.IsFalse(rooms[1].IsAvailable);
+            Assert.AreEqual(100.0, rooms[1].PricePerNight);
+            Assert.AreEqual(1, rooms[1].BedCount);
+
+            File.Delete(filePath);
+        }
+
+        [TestMethod]
+        public void Test_SaveRoomsToJson()
+        {
+            var rooms = new List<HotelRoom>
+            {
+                new HotelRoom(101, RoomType.Deluxe, true, 150.0, 2),
+                new HotelRoom(102, RoomType.Standard, false, 100.0, 1)
+            };
+
+            string filePath = "test_rooms.json";
+            SaveRoomsToJson(filePath, rooms);
+
+            Assert.IsTrue(File.Exists(filePath));
+
+            string jsonString = File.ReadAllText(filePath);
+            var loadedRooms = JsonSerializer.Deserialize<List<HotelRoom>>(jsonString);
+
+            Assert.AreEqual(2, loadedRooms.Count);
+            Assert.AreEqual(101, loadedRooms[0].RoomNumber);
+            Assert.AreEqual(RoomType.Deluxe, loadedRooms[0].RoomType);
+            Assert.IsTrue(loadedRooms[0].IsAvailable);
+            Assert.AreEqual(150.0, loadedRooms[0].PricePerNight);
+            Assert.AreEqual(2, loadedRooms[0].BedCount);
+
+            Assert.AreEqual(102, loadedRooms[1].RoomNumber);
+            Assert.AreEqual(RoomType.Standard, loadedRooms[1].RoomType);
+            Assert.IsFalse(loadedRooms[1].IsAvailable);
+            Assert.AreEqual(100.0, loadedRooms[1].PricePerNight);
+            Assert.AreEqual(1, loadedRooms[1].BedCount);
+
+            File.Delete(filePath);
+        }
+
+        [TestMethod]
+        public void Test_LoadRoomsFromJson()
+        {
+            string filePath = "test_rooms.json";
+            var rooms = new List<HotelRoom>
+            {
+                new HotelRoom(101, RoomType.Deluxe, true, 150.0, 2),
+                new HotelRoom(102, RoomType.Standard, false, 100.0, 1)
+            };
+
+            string jsonString = JsonSerializer.Serialize(rooms);
+            File.WriteAllText(filePath, jsonString);
+
+            var loadedRooms = LoadRoomsFromJson(filePath);
+
+            Assert.AreEqual(2, loadedRooms.Count);
+            Assert.AreEqual(101, loadedRooms[0].RoomNumber);
+            Assert.AreEqual(RoomType.Deluxe, loadedRooms[0].RoomType);
+            Assert.IsTrue(loadedRooms[0].IsAvailable);
+            Assert.AreEqual(150.0, loadedRooms[0].PricePerNight);
+            Assert.AreEqual(2, loadedRooms[0].BedCount);
+
+            Assert.AreEqual(102, loadedRooms[1].RoomNumber);
+            Assert.AreEqual(RoomType.Standard, loadedRooms[1].RoomType);
+            Assert.IsFalse(loadedRooms[1].IsAvailable);
+            Assert.AreEqual(100.0, loadedRooms[1].PricePerNight);
+            Assert.AreEqual(1, loadedRooms[1].BedCount);
+
+            File.Delete(filePath);
+        }
+
+        private void SaveRoomsToCsv(string filePath, List<HotelRoom> rooms)
+        {
+            using (StreamWriter writer = new StreamWriter(filePath))
+            {
+                foreach (var room in rooms)
+                {
+                    writer.WriteLine(room.ToString());
+                }
+            }
+        }
+
+        private List<HotelRoom> LoadRoomsFromCsv(string filePath)
+        {
+            var rooms = new List<HotelRoom>();
+
+            using (StreamReader reader = new StreamReader(filePath))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    var room = HotelRoom.Parse(line);
+                    if (room != null)
+                    {
+                        rooms.Add(room);
+                    }
+                }
+            }
+
+            return rooms;
+        }
+
+        private void SaveRoomsToJson(string filePath, List<HotelRoom> rooms)
+        {
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true
+            };
+
+            string jsonString = JsonSerializer.Serialize(rooms, options);
+            File.WriteAllText(filePath, jsonString);
+        }
+
+        private List<HotelRoom> LoadRoomsFromJson(string filePath)
+        {
+            string jsonString = File.ReadAllText(filePath);
+            return JsonSerializer.Deserialize<List<HotelRoom>>(jsonString);
+        }
     }
 }
